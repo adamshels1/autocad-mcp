@@ -7,7 +7,7 @@ MCP-сервер `autocad` управляет запущенным AutoCAD че�
 | macOS | `helper/acadctl` вводит строку в командную строку AutoCAD | да: macOS 26, AutoCAD 2026 (R25.1) |
 | Windows | COM-интерфейс AutoCAD (`PostCommand`), без клавиатуры | только автотестами с имитацией COM |
 
-Установка на Windows: [INSTALL_WINDOWS.md](INSTALL_WINDOWS.md).
+Установка по шагам: [macOS](INSTALL_MAC.md), [Windows](INSTALL_WINDOWS.md).
 
 ## Как это устроено
 

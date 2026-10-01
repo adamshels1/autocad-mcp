@@ -143,7 +143,7 @@ case "type":
     let previous = NSWorkspace.shared.frontmostApplication
     activate(app)
     guard let input = axElement(app, "cmdInput") else {
-        fail("ERROR: AutoCAD command line not found (is a drawing open and the command line visible? Ctrl+9 toggles it)", 8)
+        fail("ERROR: AutoCAD command line not found (is a drawing open and the command line visible? Cmd+3 toggles it)", 8)
     }
     func focusInput() {
         AXUIElementSetAttributeValue(input, kAXFocusedAttribute as CFString, kCFBooleanTrue)
