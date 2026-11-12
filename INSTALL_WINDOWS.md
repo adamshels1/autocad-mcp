@@ -1,64 +1,60 @@
-# Установка на Windows
+# Install on Windows
 
-MCP-сервер `autocad` для Claude: Claude чертит в вашем запущенном AutoCAD.
+The `autocad` MCP server for Claude: Claude draws in your running AutoCAD.
 
-> Версия для Windows пока проверена только автотестами с имитацией AutoCAD. На настоящем AutoCAD под Windows её ещё не запускали. Первым делом выполните самопроверку из шага 4 и пришлите её вывод, если что-то упадёт.
+[Русская версия](INSTALL_WINDOWS.ru.md)
 
-## Что нужно
+> The Windows version has so far been checked only by automated tests with a mocked AutoCAD. It has not been run on a real AutoCAD for Windows yet. Run the self-test from step 4 first and send its output if something fails.
 
-- **AutoCAD 2021 или новее, полная версия.** AutoCAD LT не подойдёт: в нём нет COM-интерфейса, через который работает сервер.
-- **Claude Code или Claude Desktop** с платной подпиской.
-- **uv** — менеджер Python. Сам Python ставить не нужно, uv скачает его сам.
+## What you need
 
-## 1. Поставить uv
+- **AutoCAD 2021 or newer, the full version.** AutoCAD LT will not work: it lacks the COM interface the server uses.
+- **Claude Code or Claude Desktop** with a paid plan.
+- **uv**, the Python package manager. You don't need to install Python, uv downloads it.
 
-В PowerShell:
+## 1. Install uv
+
+In PowerShell:
 
 ```powershell
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-Закройте и снова откройте PowerShell, проверьте: `uv --version`.
+Close and reopen PowerShell, check: `uv --version`.
 
-## 2. Скачать проект
+## 2. Download the project
 
-Если стоит git:
+With git:
 
 ```powershell
 git clone https://github.com/adamshels1/autocad-mcp.git C:\cad-mcp\autocad
 ```
 
-Или распакуйте архив в `C:\cad-mcp\autocad`. Внутри должны быть папки `server` и `lisp`. Папка `helper` нужна только на Mac.
+Or unpack the archive into `C:\cad-mcp\autocad`. It should contain the `server` and `lisp` folders. The `helper` folder is only for the Mac.
 
-Обновление позже: `cd C:\cad-mcp\autocad` и `git pull`, затем `uv sync` в папке `server`.
+To update later: `cd C:\cad-mcp\autocad` and `git pull`, then `uv sync` in the `server` folder.
 
-## 3. Установить зависимости
+## 3. Install the dependencies
 
 ```powershell
 cd C:\cad-mcp\autocad\server
 uv sync
 ```
 
-## 4. Самопроверка
+## 4. Self-test
 
-Запустите AutoCAD, откройте или создайте чертёж, затем:
+Start AutoCAD, open or create a drawing, then:
 
 ```powershell
 cd C:\cad-mcp\autocad\server
 uv run autocad-mcp-selftest
 ```
 
-Должно быть 10 строк `PASS` и `all 10 checks passed`. Чертёж самопроверка не меняет. Если есть `FAIL`, пришлите весь вывод целиком.
+You should see 10 `PASS` lines and `all 10 checks passed`. The self-test does not change the drawing. If there is a `FAIL`, send the whole output.
 
-## 5. Подключить к Claude
+## 5. Connect to Claude
 
-**Claude Code:**
-
-```powershell
-claude mcp add autocad -s user -- uv run --directory C:\cad-mcp\autocad\server autocad-mcp
-```
-
-**Claude Desktop:** Settings → Developer → Edit Config, добавить в `claude_desktop_config.json`:
+**Claude Desktop:** Settings → Developer → Edit Config, add to `claude_desktop_config.json`:
 
 ```json
 {
@@ -71,24 +67,30 @@ claude mcp add autocad -s user -- uv run --directory C:\cad-mcp\autocad\server a
 }
 ```
 
-Перезапустите Claude. В списке инструментов появятся `autocad_*`.
+**Claude Code:**
 
-## 6. Проверить в Claude
+```powershell
+claude mcp add autocad -s user -- uv run --directory C:\cad-mcp\autocad\server autocad-mcp
+```
 
-Напишите: «покажи статус AutoCAD», потом «нарисуй в AutoCAD план комнаты 5×4 м».
+Restart Claude. The `autocad_*` tools show up in the tools list.
 
-## Если не работает
+## 6. Try it in Claude
 
-| Что видно | Что делать |
+Write: «show the AutoCAD status», then «draw a floor plan of a 5×4 m room in AutoCAD».
+
+## If it doesn't work
+
+| What you see | What to do |
 |---|---|
-| `AutoCAD is not running (no COM object ...)` | AutoCAD не запущен, либо это AutoCAD LT. Claude и AutoCAD должны работать под одним пользователем и с одинаковыми правами: если один запущен «от имени администратора», а другой нет, они друг друга не видят. |
-| `AutoCAD is busy` | В AutoCAD открыт диалог или идёт команда. Нажмите Esc в AutoCAD и повторите. |
-| `No drawing is open` | Откройте или создайте чертёж. |
-| `No answer from AutoCAD within 60s` при первом вызове | AutoCAD спрашивает, загружать ли файл из недоверенной папки. Разрешите загрузку или добавьте папку `%USERPROFILE%\.cad-mcp\autocad` в Options → Files → Trusted Locations. |
-| Вместо русских букв знаки вопроса | AutoCAD старше 2021. Обновите его или используйте латиницу в именах слоёв и текстах. |
-| `pywin32 is not installed` | Выполните `uv sync` в папке `server`. |
+| `AutoCAD is not running (no COM object ...)` | AutoCAD is not running, or it is AutoCAD LT. Claude and AutoCAD must run as the same user with the same rights: if one runs «as administrator» and the other does not, they can't see each other. |
+| `AutoCAD is busy` | A dialog is open or a command is running in AutoCAD. Press Esc in AutoCAD and try again. |
+| `No drawing is open` | Open or create a drawing. |
+| `No answer from AutoCAD within 60s` on the first call | AutoCAD asks whether to load a file from an untrusted folder. Allow it, or add `%USERPROFILE%\.cad-mcp\autocad` in Options → Files → Trusted Locations. |
+| Question marks instead of Cyrillic letters | AutoCAD older than 2021. Update it or use Latin letters in layer names and texts. |
+| `pywin32 is not installed` | Run `uv sync` in the `server` folder. |
 
-Настройки через переменные окружения (обычно не нужны):
+Settings through environment variables (usually not needed):
 
-- `AUTOCAD_PROGID` — другая программа на платформе AutoCAD, например `BricscadApp.AcadApplication`. Не проверялось.
-- `AUTOCAD_MCP_DIR` — папка обмена, по умолчанию `%USERPROFILE%\.cad-mcp\autocad`.
+- `AUTOCAD_PROGID`: another program on the AutoCAD platform, for example `BricscadApp.AcadApplication`. Not tested.
+- `AUTOCAD_MCP_DIR`: the exchange folder, `%USERPROFILE%\.cad-mcp\autocad` by default.

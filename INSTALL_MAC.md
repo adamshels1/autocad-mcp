@@ -1,63 +1,78 @@
-# Установка на macOS
+# Install on macOS
 
-MCP-сервер `autocad` для Claude: Claude чертит в вашем запущенном AutoCAD.
+The `autocad` MCP server for Claude: Claude draws in your running AutoCAD.
 
-Проверено на macOS 26 и AutoCAD 2026 for Mac.
+[Русская версия](INSTALL_MAC.ru.md)
 
-## Что нужно
+Tested on macOS 26 and AutoCAD 2026 for Mac.
 
-- **AutoCAD for Mac 2026**, полная версия. Для другой версии см. раздел «Другая версия AutoCAD» внизу.
-- **Claude Code или Claude Desktop** с платной подпиской.
-- **Xcode Command Line Tools** — для сборки маленькой программы-помощника.
-- **uv** — менеджер Python. Сам Python ставить не нужно.
+## What you need
 
-## 1. Поставить инструменты
+- **AutoCAD for Mac 2026**, the full version. For another version see «Another AutoCAD version» at the end.
+- **Claude Code or Claude Desktop** with a paid plan.
+- **Xcode Command Line Tools**, to build a small helper program.
+- **uv**, the Python package manager. You don't need to install Python yourself.
 
-В Терминале:
+## 1. Install the tools
+
+In Terminal:
 
 ```bash
-xcode-select --install          # если уже стоит, команда скажет об этом
+xcode-select --install          # if it is already there, the command says so
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Закройте и снова откройте Терминал. Проверьте: `swiftc --version` и `uv --version`.
+Close and reopen Terminal. Check: `swiftc --version` and `uv --version`.
 
-## 2. Скачать проект
+## 2. Download the project
 
 ```bash
 git clone https://github.com/adamshels1/autocad-mcp.git ~/autocad-mcp
 ```
 
-Обновление позже: `cd ~/autocad-mcp && git pull`, затем повторить шаг 3.
+To update later: `cd ~/autocad-mcp && git pull`, then repeat step 3.
 
-## 3. Собрать помощника и установить зависимости
+## 3. Build the helper and install the dependencies
 
 ```bash
 cd ~/autocad-mcp/helper && swiftc -O acadctl.swift -o acadctl
 cd ../server && uv sync
 ```
 
-## 4. Выдать разрешения
+## 4. Grant permissions
 
-Системные настройки → Конфиденциальность и безопасность. Включите приложение, в котором запускается Claude (Терминал, iTerm, Claude Desktop), в двух списках:
+System Settings → Privacy & Security. Turn on the app that runs Claude (Terminal, iTerm, Claude Desktop) in two lists:
 
-- **Универсальный доступ** — чтобы вводить команды в AutoCAD и читать его командную строку.
-- **Запись экрана и системного аудио** — для скриншотов AutoCAD.
+- **Accessibility**: to type commands into AutoCAD and read its command line.
+- **Screen & System Audio Recording**: for AutoCAD screenshots.
 
-После включения перезапустите это приложение.
+Restart that app after turning them on.
 
-## 5. Самопроверка
+## 5. Self-test
 
-Запустите AutoCAD, создайте или откройте чертёж (не вкладка Start). Затем, **не трогая клавиатуру** секунд 20:
+Start AutoCAD and create or open a drawing (not the Start tab). Then, **without touching the keyboard** for about 20 seconds:
 
 ```bash
 cd ~/autocad-mcp/server
 uv run autocad-mcp-selftest
 ```
 
-Должно быть 10 строк `PASS` и `all 10 checks passed`. AutoCAD будет ненадолго выходить на передний план — это нормально. Чертёж самопроверка не меняет. Если есть `FAIL`, пришлите весь вывод целиком.
+You should see 10 `PASS` lines and `all 10 checks passed`. AutoCAD will come to the front now and then, that is normal. The self-test does not change the drawing. If there is a `FAIL`, send the whole output.
 
-## 6. Подключить к Claude
+## 6. Connect to Claude
+
+**Claude Desktop:** Settings → Developer → Edit Config, add to `claude_desktop_config.json` (replace `NAME` with your Mac user name):
+
+```json
+{
+  "mcpServers": {
+    "autocad": {
+      "command": "/Users/NAME/.local/bin/uv",
+      "args": ["run", "--directory", "/Users/NAME/autocad-mcp/server", "autocad-mcp"]
+    }
+  }
+}
+```
 
 **Claude Code:**
 
@@ -65,59 +80,48 @@ uv run autocad-mcp-selftest
 claude mcp add autocad -s user -- uv run --directory ~/autocad-mcp/server autocad-mcp
 ```
 
-**Claude Desktop:** Settings → Developer → Edit Config, добавить в `claude_desktop_config.json` (замените `ИМЯ` на имя пользователя Mac):
+Restart Claude. The `autocad_*` tools show up in the tools list.
 
-```json
-{
-  "mcpServers": {
-    "autocad": {
-      "command": "/Users/ИМЯ/.local/bin/uv",
-      "args": ["run", "--directory", "/Users/ИМЯ/autocad-mcp/server", "autocad-mcp"]
-    }
-  }
-}
-```
+## 7. Try it in Claude
 
-Перезапустите Claude. В списке инструментов появятся `autocad_*`.
+Write: «show the AutoCAD status», then «draw a floor plan of a 5×4 m room in AutoCAD».
 
-## 7. Проверить в Claude
+## How it behaves on a Mac
 
-Напишите: «покажи статус AutoCAD», потом «нарисуй в AutoCAD план комнаты 5×4 м».
+AutoCAD for Mac has no programming interface for outside control, so commands are typed into its command line:
 
-## Как это ведёт себя на Mac
+- On each command AutoCAD comes to the front for a split second, then the focus goes back.
+- The screen must be unlocked.
+- Better not to type while Claude is drawing. If keystrokes do get into a command, the helper notices and types the line again.
+- The AutoCAD command line must be visible. To show it: `Cmd+3` or the `COMMANDLINE` command.
 
-У AutoCAD for Mac нет программного интерфейса для управления снаружи, поэтому команды вводятся в его командную строку:
+## If it doesn't work
 
-- На каждую команду AutoCAD на долю секунды выходит на передний план, потом фокус возвращается.
-- Экран должен быть разблокирован.
-- Лучше не печатать в момент, когда Claude чертит. Если нажатия всё же попадут в команду, помощник это заметит и введёт строку заново.
-- Командная строка AutoCAD должна быть видна. Включить: `Cmd+3` или команда `COMMANDLINE`.
-
-## Если не работает
-
-| Что видно | Что делать |
+| What you see | What to do |
 |---|---|
-| `helper not built` | Не выполнен шаг 3: соберите `acadctl`. |
-| `no Accessibility permission` | Шаг 4: включите «Универсальный доступ» и перезапустите Терминал или Claude. |
-| `AutoCAD (...) is not running` | AutoCAD не запущен или у вас другая версия, см. ниже. |
-| `No drawing is open` | Открыта вкладка Start. Создайте или откройте чертёж. |
-| `could not bring AutoCAD to the front` | Экран заблокирован или поверх открыт системный диалог. |
-| `AutoCAD command line not found` | Командная строка скрыта: включите её. |
-| `the AutoCAD command line did not accept the text` | Во время ввода кто-то печатал или фокус ушёл в другое поле AutoCAD. Повторите команду. |
-| `screencapture failed` | Шаг 4: включите «Запись экрана». |
+| `helper not built` | Step 3 was skipped: build `acadctl`. |
+| `no Accessibility permission` | Step 4: turn on Accessibility and restart Terminal or Claude. |
+| `AutoCAD (...) is not running` | AutoCAD is not running or you have another version, see below. |
+| `No drawing is open` | The Start tab is open. Create or open a drawing. |
+| `could not bring AutoCAD to the front` | The screen is locked or a system dialog is on top. |
+| `AutoCAD command line not found` | The command line is hidden: turn it on. |
+| `the AutoCAD command line did not accept the text` | Someone typed during input or the focus went to another AutoCAD field. Run the command again. |
+| `screencapture failed` | Step 4: turn on Screen Recording. |
 
-## Другая версия AutoCAD
+## Another AutoCAD version
 
-Сервер ищет AutoCAD 2026. Для другой версии укажите её идентификатор:
+The server looks for AutoCAD 2026. For another version give its identifier:
 
 ```bash
-osascript -e 'id of app "AutoCAD 2025"'      # покажет, например, com.autodesk.AutoCAD2025
+osascript -e 'id of app "AutoCAD 2025"'      # prints, for example, com.autodesk.AutoCAD2025
 claude mcp add autocad -s user -e ACAD_BUNDLE_ID=com.autodesk.AutoCAD2025 -- uv run --directory ~/autocad-mcp/server autocad-mcp
 ```
 
-Другие версии не проверялись. AutoCAD LT for Mac не поддерживается: в нём нет AutoLISP.
+In Claude Desktop put it in the config as `"env": {"ACAD_BUNDLE_ID": "com.autodesk.AutoCAD2025"}` next to `"args"`.
 
-Необязательные настройки:
+Other versions were not tested. AutoCAD LT for Mac is not supported: it has no AutoLISP.
 
-- `AUTOCAD_MCP_RESTORE_FOCUS=0` — оставлять AutoCAD на переднем плане после команды.
-- `AUTOCAD_MCP_DIR` — папка обмена, по умолчанию `~/.cad-mcp/autocad`.
+Optional settings:
+
+- `AUTOCAD_MCP_RESTORE_FOCUS=0`: keep AutoCAD in front after a command.
+- `AUTOCAD_MCP_DIR`: the exchange folder, `~/.cad-mcp/autocad` by default.
