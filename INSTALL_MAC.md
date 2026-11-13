@@ -61,7 +61,7 @@ You should see 10 `PASS` lines and `all 10 checks passed`. AutoCAD will come to 
 
 ## 6. Connect to Claude
 
-**Claude Desktop:** Settings → Developer → Edit Config, add to `claude_desktop_config.json` (replace `NAME` with your Mac user name):
+**Claude Desktop:** Settings → Desktop app → Extensions → Edit config (older versions: Settings → Developer → Edit Config), add to `claude_desktop_config.json` (replace `NAME` with your Mac user name):
 
 ```json
 {

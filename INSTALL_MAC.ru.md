@@ -67,7 +67,7 @@ uv run autocad-mcp-selftest
 claude mcp add autocad -s user -- uv run --directory ~/autocad-mcp/server autocad-mcp
 ```
 
-**Claude Desktop:** Settings → Developer → Edit Config, добавить в `claude_desktop_config.json` (замените `ИМЯ` на имя пользователя Mac):
+**Claude Desktop:** Settings → Desktop app → Extensions → Edit config (в старых версиях Settings → Developer → Edit Config), добавить в `claude_desktop_config.json` (замените `ИМЯ` на имя пользователя Mac):
 
 ```json
 {

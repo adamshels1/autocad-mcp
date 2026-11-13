@@ -21,7 +21,7 @@ Step-by-step install: [macOS](INSTALL_MAC.md), [Windows](INSTALL_WINDOWS.md).
    cd ../server && uv sync
    ```
 
-2. In Claude Desktop open **Settings → Developer → Edit Config** and add this to `claude_desktop_config.json`
+2. In Claude Desktop open **Settings → Desktop app → Extensions → Edit config** (older versions: Settings → Developer → Edit Config) and add this to `claude_desktop_config.json`
    (replace `NAME` with your Mac user name):
 
    ```json

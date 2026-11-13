@@ -54,7 +54,7 @@ You should see 10 `PASS` lines and `all 10 checks passed`. The self-test does no
 
 ## 5. Connect to Claude
 
-**Claude Desktop:** Settings → Developer → Edit Config, add to `claude_desktop_config.json`:
+**Claude Desktop:** Settings → Desktop app → Extensions → Edit config (older versions: Settings → Developer → Edit Config), add to `claude_desktop_config.json`:
 
 ```json
 {
